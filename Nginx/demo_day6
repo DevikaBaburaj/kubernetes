@@ -1,2 +1,97 @@
 kubectl api-resources
 
+kubectl apply -f pod.yaml
+pod/webserver-pod created
+
+
+kubectl get pods
+NAME            READY   STATUS    RESTARTS   AGE
+webserver-pod   2/2     Running   0          5s
+
+kubectl describe pod webserver-pod
+
+kubectl apply -f replicaset.yaml
+replicaset.apps/webserver-rs created
+
+kubectl get replicaset
+NAME           DESIRED   CURRENT   READY   AGE
+webserver-rs   3         3         3       27s
+
+3 replicas of the pods is running
+kubectl get pods
+NAME                 READY   STATUS    RESTARTS   AGE
+webserver-pod        2/2     Running   0          7m14s
+webserver-rs-m6lhg   2/2     Running   0          72s
+webserver-rs-sqj6j   2/2     Running   0          72s
+webserver-rs-xt5vx   2/2     Running   0          72s
+
+kubectl delete pod webserver-rs-m6lhg
+pod "webserver-rs-m6lhg" deleted
+
+kubectl get pods
+NAME                 READY   STATUS        RESTARTS   AGE
+webserver-pod        2/2     Running       0          8m25s
+webserver-rs-m6lhg   2/2     Terminating   0          2m23s
+webserver-rs-mf6x8   2/2     Running       0          19s
+webserver-rs-sqj6j   2/2     Running       0          2m23s
+webserver-rs-xt5vx   2/2     Running       0          2m23s
+
+always maintain the no: of replicas specified
+
+
+kubectl apply -f deployment.yaml
+deployment.apps/webserver-deployment created
+
+kubectl get deployment
+NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
+webserver-deployment   3/3     3            3           24s
+
+kubectl get replicaset
+NAME                              DESIRED   CURRENT   READY   AGE
+webserver-deployment-7467c86bd8   3         3         3       57s
+webserver-rs                      3         3         3       6m57s
+
+kubectl get pods
+NAME                                    READY   STATUS    RESTARTS   AGE
+webserver-deployment-7467c86bd8-89xsd   2/2     Running   0          35s
+webserver-deployment-7467c86bd8-js2nw   2/2     Running   0          36s
+webserver-deployment-7467c86bd8-z9xv9   2/2     Running   0          35s
+webserver-pod                           2/2     Running   0          12m
+webserver-rs-mf6x8                      2/2     Running   0          4m32s
+webserver-rs-sqj6j                      2/2     Running   0          6m36s
+webserver-rs-xt5vx                      2/2     Running   0          6m36s
+
+
+kubectl apply -f deployment.yaml
+deployment.apps/webserver-deployment configured
+kubectl get pods
+NAME                                    READY   STATUS              RESTARTS   AGE
+webserver-deployment-7467c86bd8-89xsd   2/2     Running             0          2m12s
+webserver-deployment-7467c86bd8-js2nw   2/2     Running             0          2m13s
+webserver-deployment-7467c86bd8-z9xv9   2/2     Running             0          2m12s
+webserver-deployment-78cc95cfb7-qz559   0/2     ContainerCreating   0          3s
+webserver-pod                           2/2     Running             0          14m
+webserver-rs-mf6x8                      2/2     Running             0          6m9s
+webserver-rs-sqj6j                      2/2     Running             0          8m13s
+webserver-rs-xt5vx                      2/2     Running             0          8m13s
+
+
+kubectl get pods -o wide
+NAME                                    READY   STATUS    RESTARTS   AGE     IP            NODE           NOMINATED NODE   READINESS GATES
+webserver-deployment-78cc95cfb7-4qpbf   2/2     Running   0          62s     10.244.1.23   minikube-m02   <none>           <none>
+webserver-deployment-78cc95cfb7-9dml6   2/2     Running   0          68s     10.244.0.11   minikube       <none>           <none>
+webserver-deployment-78cc95cfb7-qz559   2/2     Running   0          72s     10.244.1.22   minikube-m02   <none>           <none>
+webserver-pod                           2/2     Running   0          15m     10.244.1.16   minikube-m02   <none>           <none>
+webserver-rs-mf6x8                      2/2     Running   0          7m18s   10.244.1.19   minikube-m02   <none>           <none>
+webserver-rs-sqj6j                      2/2     Running   0          9m22s   10.244.1.17   minikube-m02   <none>           <none>
+webserver-rs-xt5vx                      2/2     Running   0          9m22s   10.244.0.9    minikube       <none>           <none>
+
+
+kubectl describe deployment webserver-deployment
+Labels:                 app=webserver-deployment
+Annotations:            deployment.kubernetes.io/revision: 2
+Selector:               app=webserver-dp
+Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge

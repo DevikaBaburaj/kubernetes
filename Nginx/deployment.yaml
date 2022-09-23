@@ -24,3 +24,4 @@ spec:
        image: httpd
        ports:
        - containerPort: 80
+       command: ["sleep", "infinity"]
