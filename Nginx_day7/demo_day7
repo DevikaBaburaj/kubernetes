@@ -1,0 +1,103 @@
+kubectl apply -f configmap.yaml
+configmap/nginx-cm created
+
+kubectl get configmap
+NAME               DATA   AGE
+kube-root-ca.crt   1      92m
+nginx-cm           1      18s
+
+kubectl describe configmap nginx-cm
+Name:         nginx-cm
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+AWS_CONFIG:
+----
+testing
+
+BinaryData
+====
+
+Events:  <none>
+
+kubectl apply -f secrets.yaml
+secret/nginx-secrets created
+
+kubectl get secret
+NAME            TYPE     DATA   AGE
+nginx-secrets   Opaque   1      13s
+
+kubectl describe secret nginx-secrets
+Name:         nginx-secrets
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+AWS_PASSWORD:  6 bytes
+
+
+
+kubectl apply -f deployment.yaml
+deployment.apps/nginx created
+
+kubectl get deployment
+NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
+nginx                  3/3     3            3           15s
+
+kubectl get replicaset
+NAME               DESIRED   CURRENT   READY   AGE
+nginx-5f84d985c6   3         3         3       119s
+
+kubectl get pods
+NAME                                    READY   STATUS        RESTARTS   AGE
+nginx-5f84d985c6-jzwzh                  1/1     Running       0          92s
+nginx-5f84d985c6-w4b4j                  1/1     Running       0          92s
+nginx-5f84d985c6-wrmmf                  1/1     Running       0          92s
+
+kubectl exec -it nginx-5f84d985c6-jzwzh -- bash
+root@nginx-5f84d985c6-jzwzh:/# env
+.
+.
+AWS_CONFIG=testing
+.
+AWS_PASSWORD=��,�
+
+
+
+edit configmap.yaml and then apply it
+
+kubectl describe configmap nginx-cm
+shows new containerPort:
+now we have to retart the deployment
+
+
+kubectl rollout restart deployment nginx
+deployment.apps/nginx restarted
+
+kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-77fb4767f7-6k75s   1/1     Running   0          27s
+nginx-77fb4767f7-qhhnc   1/1     Running   0          32s
+nginx-77fb4767f7-rh5z2   1/1     Running   0          29s
+
+kubectl exec -it nginx-77fb4767f7-6k75s -- bash
+root@nginx-77fb4767f7-6k75s:/# env
+AWS_CONFIG=not found
+AWS_PASSWORD=��,�
+
+
+kubectl apply -f service.yaml
+service/nginx-service created
+
+kubectl get service
+NAME            TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)           AGE
+kubernetes      ClusterIP      10.96.0.1      <none>        443/TCP           111m
+nginx-service   NodePort       10.97.211.3    <none>        30050:30100/TCP   14s
+
