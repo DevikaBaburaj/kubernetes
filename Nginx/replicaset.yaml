@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: webserver-rs
+  labels:
+    app: webserver-rs
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: webserver-rs
+  template:
+    metadata:
+      labels:
+        tier: webserver-rs
+    spec:
+     containers:
+     - name: nginx
+       image: nginx
+       ports:
+       - containerPort: 80
+
+     - name: httpd
+       image: httpd
+       ports:
+       - containerPort: 80
