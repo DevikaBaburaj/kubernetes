@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service #By default cluster IP
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - port: 30050
+    targetPort: 80

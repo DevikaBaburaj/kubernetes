@@ -1,0 +1,235 @@
+minikube start --driver=docker --alsologtostderr --nodes 2 -p cluster-k8s
+minikube start --driver=docker --nodes 2 #worked for me
+
+alias kubectl="minikube kubectl --"
+
+kubectl get nodes
+NAME           STATUS   ROLES           AGE     VERSION
+minikube       Ready    control-plane   2m22s   v1.25.0
+minikube-m02   Ready    <none>          54s     v1.25.0
+
+kubectl get replicaset
+
+kubectl create deployment webapp --image=nginx --replicas=3
+deployment.apps/webapp created
+
+kubectl get deployment
+NAME     READY   UP-TO-DATE   AVAILABLE   AGE
+webapp   3/3     3            3           24s
+
+kubectl get replicaset
+NAME                DESIRED   CURRENT   READY   AGE
+webapp-6684ccd7b8   3         3         3       46s
+
+kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+webapp-6684ccd7b8-9skcq   1/1     Running   0          60s
+webapp-6684ccd7b8-f6rxq   1/1     Running   0          60s
+webapp-6684ccd7b8-w52rh   1/1     Running   0          60s
+
+kubectl describe deployment webapp
+
+kubectl edit deployment webapp
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2022-09-23T15:09:29Z"
+  generation: 1
+  labels:
+    app: webapp
+  name: webapp
+  namespace: default
+  resourceVersion: "824"
+  uid: c9e9c379-2bfa-451e-9b1d-fac526b67c77
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: webapp
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: Always
+        name: nginx
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+       securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 3
+  conditions:
+  - lastTransitionTime: "2022-09-23T15:09:40Z"
+    lastUpdateTime: "2022-09-23T15:09:40Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2022-09-23T15:09:29Z"
+    lastUpdateTime: "2022-09-23T15:12:29Z"
+    message: ReplicaSet "webapp-5fc8bf46d8" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 2
+  readyReplicas: 3
+  replicas: 3
+  updatedReplicas: 3
+
+       kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+webapp-5fc8bf46d8-7w2sx   1/1     Running   0          41s
+webapp-5fc8bf46d8-r4zg6   1/1     Running   0          37s
+webapp-5fc8bf46d8-ws28p   1/1     Running   0          45s
+
+kubectl describe pod webapp-5fc8bf46d8-7w2sx
+
+kubectl rollout history deployment webapp
+deployment.apps/webapp
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+
+
+kubectl describe deployment webapp
+Annotations:            deployment.kubernetes.io/revision: 2
+
+kubectl rollout undo deployment webapp --to-revision=1
+deployment.apps/webapp rolled back
+ubuntu@ip-172-31-0-80:~$ kubectl get pods
+NAME                      READY   STATUS              RESTARTS   AGE
+webapp-5fc8bf46d8-7w2sx   1/1     Running             0          5m17s
+webapp-5fc8bf46d8-r4zg6   1/1     Terminating         0          5m13s
+webapp-6684ccd7b8-6rcxw   0/1     ContainerCreating   0          0s
+webapp-6684ccd7b8-pgnjn   1/1     Running             0          4s
+webapp-6684ccd7b8-z7bqh   1/1     Running             0          2s
+
+##Another method
+
+kubectl set image deployment webapp nginx=httpd
+deployment.apps/webapp image updated
+
+kubectl get pods
+kubectl describe pod webapp-5fc8bf46d8-c2mfk
+
+kubectl get replicaset
+NAME                DESIRED   CURRENT   READY   AGE
+webapp-5fc8bf46d8   3         3         3       14m
+webapp-6684ccd7b8   0         0         0       17m
+
+##Replica set
+--------------
+
+cat replicaset.yaml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: webserver-rs
+  labels:
+    app: webserver-rs
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: webserver-rs
+  template:
+    metadata:
+      labels:
+        tier: webserver-rs
+    spec:
+     containers:
+     - name: nginx
+       image: nginx
+       ports:
+       - containerPort: 80
+
+kubectl apply -f replicaset.yaml
+replicaset.apps/webserver-rs created
+
+kubectl get replicaset
+NAME                DESIRED   CURRENT   READY   AGE
+webapp-5fc8bf46d8   3         3         3       24m
+webapp-6684ccd7b8   0         0         0       27m
+webserver-rs        3         3         3       71s
+
+kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+webapp-5fc8bf46d8-c2mfk   1/1     Running   0          10m
+webapp-5fc8bf46d8-ngpmh   1/1     Running   0          10m
+webapp-5fc8bf46d8-nz49v   1/1     Running   0          10m
+webserver-rs-4nfnq        1/1     Running   0          99s
+webserver-rs-9sg6t        1/1     Running   0          99s
+webserver-rs-zbw4g        1/1     Running   0          99s
+
+#if edited and applied, name of pods wont chnage. but they all get killed
+#at a time and new ones are created. Cause downtime
+
+##Service
+--------------
+
+kubectl expose deployment webapp --type=LoadBalancer --port=80
+service/webapp exposed
+
+kubectl get services
+NAME         TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP      10.96.0.1      <none>        443/TCP        38m
+webapp       LoadBalancer   10.97.25.205   <pending>     80:31135/TCP   12s
+
+This IP is not publicly accessible.
+
+minikube service webapp
+|-----------|--------|-------------|---------------------------|
+| NAMESPACE |  NAME  | TARGET PORT |            URL            |
+|-----------|--------|-------------|---------------------------|
+| default   | webapp |          80 | http://192.168.58.2:31135 |
+|-----------|--------|-------------|---------------------------|
+🎉  Opening service default/webapp in default browser...
+👉  http://192.168.58.2:31135
+
+
+In another terminal, ssh to ec instance.
+
+alias kubectl="minikube kubectl --"
+
+kubectl run box --image=ubuntu -it -- bash
+
+root@box:/# apt update && apt install curl
+
+curl http://192.168.58.2:31135
+<html><body><h1>It works!</h1></body></html>
+
+minikube ip
+192.168.58.2
+
+kubectl annotate deployment webapp kubernetes.io/change-cause="message noted.."
+deployment.apps/webapp annotated
+
+kubectl describe deployment webapp
+Name:                   webapp
+Namespace:              default
+CreationTimestamp:      Fri, 23 Sep 2022 15:09:29 +0000
+Labels:                 app=webapp
+Annotations:            deployment.kubernetes.io/revision: 4
+                        kubernetes.io/change-cause: message noted..
+
+

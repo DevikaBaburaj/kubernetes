@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-example-com-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+  labels:
+    app: nginx
+  
+spec:
+  rules:
+  - host: test.inhouse.net
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: nginx-service #name of the service created
+            port: 
+              number: 30050 #Port to which cluster IP is exposed 
