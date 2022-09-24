@@ -17,3 +17,195 @@ NAME           STATUS   ROLES           AGE   VERSION
 minikube       Ready    control-plane   23h   v1.25.0
 minikube-m02   Ready    <none>          19s   v1.25.0
 
+kubectl apply -f nginx-ingress-controller.yaml
+namespace/ingress-nginx created
+serviceaccount/ingress-nginx created
+configmap/ingress-nginx-controller created
+clusterrole.rbac.authorization.k8s.io/ingress-nginx created
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx created
+role.rbac.authorization.k8s.io/ingress-nginx created
+rolebinding.rbac.authorization.k8s.io/ingress-nginx created
+service/ingress-nginx-controller-admission created
+service/ingress-nginx-controller created
+deployment.apps/ingress-nginx-controller created
+validatingwebhookconfiguration.admissionregistration.k8s.io/ingress-nginx-admission created
+serviceaccount/ingress-nginx-admission created
+clusterrole.rbac.authorization.k8s.io/ingress-nginx-admission created
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
+role.rbac.authorization.k8s.io/ingress-nginx-admission created
+rolebinding.rbac.authorization.k8s.io/ingress-nginx-admission created
+job.batch/ingress-nginx-admission-create created
+job.batch/ingress-nginx-admission-patch created
+
+kubectl get ns
+NAME              STATUS   AGE
+default           Active   23h
+ingress-nginx     Active   55s
+kube-node-lease   Active   23h
+kube-public       Active   23h
+kube-system       Active   23h
+
+
+kubectl get pods -n ingress-nginx
+
+kubectl describe pod ingress-nginx-admission-patch-n9pxc
+
+
+kubectl apply -f deployment.yaml
+deployment.apps/nginx created
+kubectl get deployment
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   3/3     3            3           10s
+
+kubectl apply -f service.yaml
+service/nginx-service created
+kubectl get service
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP     23h
+nginx-service   ClusterIP   10.98.240.212   <none>        30050/TCP   6s
+
+
+kubectl apply -f ingress-object.yaml
+ingress.networking.k8s.io/test-example-com-ingress created
+kubectl get ingress
+NAME                       CLASS    HOSTS              ADDRESS   PORTS   AGE
+test-example-com-ingress   <none>   test.inhouse.net             80      44s
+
+
+
+https://devopscube.com/setup-ingress-kubernetes-nginx-controller/
+
+https://github.com/scriptcamp/nginx-ingress-controller/blob/main/manifests
+
+git clone https://github.com/scriptcamp/nginx-ingress-controller.git
+
+
+ingress-nginx namespace
+kubectl create ns ingress-nginx
+
+Service account/Roles/ClusterRoles for Nginx admission controller
+Create a file named admission-service-account.yaml
+kubectl apply -f admission-service-account.yaml
+
+serviceaccount/ingress-nginx-admission configured
+role.rbac.authorization.k8s.io/ingress-nginx-admission configured
+rolebinding.rbac.authorization.k8s.io/ingress-nginx-admission configured
+clusterrole.rbac.authorization.k8s.io/ingress-nginx-admission configured
+clusterrolebinding.rbac.authorization.k8s.io/ingress-nginx-admission configured
+
+
+Validating webhook Configuration
+Create a file named validating-webhook.yaml
+kubectl apply -f validating-webhook.yaml
+
+validatingwebhookconfiguration.admissionregistration.k8s.io/ingress-nginx-admission configured
+
+Jobs to create/update Webhook CA bundles
+Create a file named jobs.yaml
+
+
+
+Service account/Roles/ClusterRoles of Nginx controller deployment
+Nginx controller configmap
+Services for nginx controller & admission controller
+Ingress controller deployment
+
+
+====================================
+https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/
+
+
+minikube delete
+minikube start
+alias kubectl="minikube kubectl --"
+
+kubectl get nodes
+NAME       STATUS   ROLES           AGE   VERSION
+minikube   Ready    control-plane   32s   v1.25.0
+
+kubectl get ns
+NAME              STATUS   AGE
+default           Active   35s
+kube-node-lease   Active   36s
+kube-public       Active   37s
+kube-system       Active   37s
+
+minikube addons enable ingress
+💡  ingress is an addon maintained by Kubernetes. For any concerns contact minikube on GitHub.
+You can view the list of minikube maintainers at: https://github.com/kubernetes/minikube/blob/master/OWNERS
+    ▪ Using image k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
+    ▪ Using image k8s.gcr.io/ingress-nginx/controller:v1.2.1
+    ▪ Using image k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
+🔎  Verifying ingress addon...
+🌟  The 'ingress' addon is enabled
+
+
+kubectl get ns
+NAME              STATUS   AGE
+default           Active   2m7s
+ingress-nginx     Active   84s
+kube-node-lease   Active   2m8s
+kube-public       Active   2m9s
+kube-system       Active   2m9s
+
+
+kubectl get pods -n ingress-nginx
+NAME                                        READY   STATUS      RESTARTS   AGE
+ingress-nginx-admission-create-244ft        0/1     Completed   0          107s
+ingress-nginx-admission-patch-2l6k5         0/1     Completed   1          107s
+ingress-nginx-controller-5959f988fd-kc88z   1/1     Running     0          107s
+
+
+kubectl create deployment web --image=gcr.io/google-samples/hello-app:1.0
+deployment.apps/web created
+
+kubectl expose deployment web --type=NodePort --port=8080
+service/web exposed
+
+kubectl get service web
+NAME   TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+web    NodePort   10.100.152.196   <none>        8080:32490/TCP   28s
+
+
+minikube service web --url
+http://192.168.58.2:32490
+
+ubuntu@ip-172-31-0-80:~$ curl http://192.168.58.2:32490
+Hello, world!
+Version: 1.0.0
+Hostname: web-84fb9498c7-9tccz
+
+kubectl apply -f https://k8s.io/examples/service/networking/example-ingress.yaml
+ingress.networking.k8s.io/example-ingress created
+
+kubectl get ingress
+NAME              CLASS   HOSTS              ADDRESS        PORTS   AGE
+example-ingress   nginx   hello-world.info   192.168.58.2   80      41s
+
+
+sudo vi /etc/hosts
+
+curl hello-world.info
+Hello, world!
+Version: 1.0.0
+Hostname: web-84fb9498c7-9tccz
+
+
+kubectl create deployment web2 --image=gcr.io/google-samples/hello-app:2.0
+deployment.apps/web2 created
+kubectl expose deployment web2 --port=8080 --type=NodePort
+
+kubectl apply -f example-ingress.yaml
+ingress.networking.k8s.io/example-ingress configured
+
+ curl hello-world.info
+Hello, world!
+Version: 1.0.0
+Hostname: web-84fb9498c7-9tccz
+ubuntu@ip-172-31-0-80:~$ curl hello-world.info/v2
+Hello, world!
+Version: 2.0.0
+Hostname: web2-7df4dcf77b-d2rhd
+
+
+
