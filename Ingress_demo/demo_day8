@@ -10,3 +10,10 @@ NodePort:
 https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.44.0/deploy/static/provider/baremetal/deploy.yaml
 
 
+minikube start --driver=docker --nodes 2
+alias kubectl="minikube kubectl --"
+kubectl get nodes
+NAME           STATUS   ROLES           AGE   VERSION
+minikube       Ready    control-plane   23h   v1.25.0
+minikube-m02   Ready    <none>          19s   v1.25.0
+
