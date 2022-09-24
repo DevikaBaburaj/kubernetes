@@ -1,0 +1,12 @@
+https://platform9.com/learn/v1.0/tutorials/nginix-controller-via-yaml#step-3---validate-the-nginx-ingress-controller
+
+
+Cluster IP:
+
+https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.44.0/deploy/static/provider/cloud/deploy.yaml
+
+NodePort:
+
+https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.44.0/deploy/static/provider/baremetal/deploy.yaml
+
+

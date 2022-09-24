@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mytestapp-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx" #no need of change as we are using the same ingress controller
+  labels:
+    app: nginx
+  
+spec:
+  rules:
+  - host: mytestapp.inhouse.net
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: httpd-service #name of the service created
+            port: 
+              number: 32000 #Port to which cluster IP is exposed 
